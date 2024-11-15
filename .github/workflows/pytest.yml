@@ -1,0 +1,86 @@
+name: Run tests
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - Triggers/workflow_execution.txt
+
+  workflow_dispatch:
+    inputs:
+      job_name:
+        description: 'name of the job to run(optional)'
+        required: false
+        default: ''
+
+jobs:
+  Setup:
+    runs-on: ubuntu-latest
+    outputs:
+      workspace: ${{ steps.workspace.outputs.workspace }}
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+
+    # strategy:
+    #   matrix:
+    #     marker: [smoke, regression, advanced]
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Read job list
+      id: read-jobs
+      run: |
+        JOBS=$(awk 'NF' .github/jobs/Pytest_jobs.txt | jq -R -s -c 'split("\n") | map(select(length>0))')
+        echo "JOBS=$JOBS" >> $GITHUB_ENV
+
+    - name: Set matrix
+      id: set-matrix
+      run: |
+        echo "matrix={\"job\":${JOBS}}" >> $GITHUB_OUTPUT
+
+    - name: Save workspace path
+      id: workspace
+      run: echo "workspace=${{ github.workspace }}" >> $GITHUB_ENV
+
+  
+  Build:
+    runs-on: ubuntu-latest
+    needs: Setup
+    strategy:
+      matrix: ${{ fromJson(needs.Setup.outputs.matrix) }}
+      fail-fast: false
+      max-parallel: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: ${{ matrix.job }}
+        if: ${{ github.event.inputs.job_name == '' || matrix.job == github.event.inputs.job_name }}
+        run: |
+          pytest -m ${{matrix.job}}
+        
+    outputs:
+      result: ${{ job.status }}

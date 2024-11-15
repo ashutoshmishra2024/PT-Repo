@@ -1,0 +1,75 @@
+name: Run Scripts Based on Directory Type
+
+on:
+  workflow_dispatch:  # Allows manual trigger
+  push:
+    branches:
+      - main
+
+jobs:
+  process-config:
+    runs-on: ubuntu-latest
+    outputs:
+      api-jobs: ${{ steps.set-output.outputs.api-jobs }}
+      ui-jobs: ${{ steps.set-output.outputs.ui-jobs }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Parse config file and generate jobs
+        id: process
+        env: 
+          CONFIG_FILE: config.txt
+        run: |
+          python3 .github/scripts/parse_config.py
+
+        # with:
+        #   api-jobs: ${{ fromJson(steps.process.outputs.api-jobs) }}
+        #   ui-jobs: ${{ fromJson(steps.process.outputs.ui-jobs) }}
+
+  api:
+    needs: process-config
+    if: needs.process-config.outputs.api-jobs != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        job: ${{ fromJson(needs.process-config.outputs.api-jobs) }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Run API scripts
+        env:
+          APPNAME: ${{ matrix.job.appname }}
+          REGION: ${{ matrix.job.region }}
+          DIRECTORY: ${{ matrix.job.directory }}
+        run: |
+          for script in ${{ matrix.job.scripts }}; do
+            echo "Running $script in directory $DIRECTORY for $APPNAME in region $REGION"
+            python3 ./${{ matrix.job.directory }}/$script
+          done
+
+  ui:
+    needs: process-config
+    if: needs.process-config.outputs.ui-jobs != '[]'
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        job: ${{ fromJson(needs.process-config.outputs.ui-jobs) }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Run UI scripts
+        env:
+          APPNAME: ${{ matrix.job.appname }}
+          REGION: ${{ matrix.job.region }}
+          DIRECTORY: ${{ matrix.job.directory }}
+        run: |
+          for script in ${{ matrix.job.scripts }}; do
+            echo "Running $script in directory $DIRECTORY for $APPNAME in region $REGION"
+            python3 ./${{ matrix.job.directory }}/$script
+          done
