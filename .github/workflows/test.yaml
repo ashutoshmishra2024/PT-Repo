@@ -1,7 +1,9 @@
 name: Performance Tests
-on: 
+on:
+  workflow_dispatch:  # Allows manual trigger
   push:
-  workflow_dispatch:
+    branches:
+      - main
 jobs:
   setup-matrix:
     runs-on: ubuntu-latest
@@ -19,7 +21,7 @@ jobs:
 
   run-api-tests:
     needs: setup-matrix
-    runs-on: api-runner
+    runs-on: ubuntu-latest  #api-runner
     strategy:
       matrix:
         include: ${{ fromJson(needs.setup-matrix.outputs.matrix) }}
@@ -36,7 +38,7 @@ jobs:
 
   run-ui-tests:
     needs: setup-matrix
-    runs-on: ui-runner
+    runs-on: ubuntu-latest  #ui-runner
     strategy:
       matrix:
         include: ${{ fromJson(needs.setup-matrix.outputs.matrix) }}
