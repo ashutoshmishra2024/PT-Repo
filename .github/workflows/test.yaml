@@ -1,0 +1,52 @@
+name: Performance Tests
+
+on: [push, pull_request]
+
+jobs:
+  setup-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Read conditions from file
+        id: read_conditions
+        run: |
+          matrix=$(awk -F'*' '{print "{\"app\":\""$1"\",\"region\":\""$2"\",\"api\":\""$3"\",\"ui\":\""$4"\"}"}' conditions.txt | jq -s)
+          echo "::set-output name=matrix::${matrix}"
+
+  run-api-tests:
+    needs: setup-matrix
+    runs-on: api-runner
+    strategy:
+      matrix:
+        include: ${{ fromJson(needs.setup-matrix.outputs.matrix) }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Run API performance tests
+        if: ${{ matrix.api != '' }}
+        run: |
+          echo "Running API performance tests for ${{ matrix.app }} in ${{ matrix.region }}"
+          # Add your API performance test commands here
+          echo "Executing script: ${{ matrix.api }}"
+
+  run-ui-tests:
+    needs: setup-matrix
+    runs-on: ui-runner
+    strategy:
+      matrix:
+        include: ${{ fromJson(needs.setup-matrix.outputs.matrix) }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Run UI performance tests
+        if: ${{ matrix.ui != '' }}
+        run: |
+          echo "Running UI performance tests for ${{ matrix.app }} in ${{ matrix.region }}"
+          # Add your UI performance test commands here
+          echo "Executing script: ${{ matrix.ui }}"
