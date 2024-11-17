@@ -25,7 +25,7 @@ jobs:
           fi
 
   ui:
-    runs-on: windows-latest
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         folder: [folder1, folder-2, folder-3]
