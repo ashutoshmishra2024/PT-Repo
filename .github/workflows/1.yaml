@@ -42,3 +42,21 @@ jobs:
           else
             echo "No script found in ${{ matrix.folder }}"
           fi
+  api-1:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        folder: [folder1, folder-2, folder-3]
+    steps:
+      # checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Run Script
+        run: |
+          echo "Processing folder: ${{ matrix.folder }}"
+          if [ -f "./scripts/${{ matrix.folder }}/script.sh" ]; then
+            bash "./scripts/${{ matrix.folder }}/script.sh"
+          else
+            echo "No script found in ${{ matrix.folder }}"
+          fi
