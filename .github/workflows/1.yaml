@@ -6,7 +6,7 @@ on:
       - main
 jobs:
   run-scripts:
-    #runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         folder: [folder1, folder-2, folder-3]
