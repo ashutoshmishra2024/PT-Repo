@@ -1,4 +1,3 @@
-#!/bin/bash
 /scripts
   /folder1
     -script1.sh
