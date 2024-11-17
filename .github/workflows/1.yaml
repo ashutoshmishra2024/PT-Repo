@@ -1,5 +1,4 @@
 name: Run Jmeter Tests from Config File
-
 on:
   push:
     branches:
