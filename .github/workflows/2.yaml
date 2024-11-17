@@ -22,7 +22,7 @@ jobs:
           fi
 
   job2-ui:
-    runs-on: windows-latest
+    runs-on: ubuntu-22.04
     needs: job1-api
     strategy:
       matrix:
