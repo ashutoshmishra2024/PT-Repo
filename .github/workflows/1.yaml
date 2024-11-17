@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        folder: [1]
+          folder: [folder-1]
     
     steps:
       # checkout repository
