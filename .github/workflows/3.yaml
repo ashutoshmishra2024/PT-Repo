@@ -1,5 +1,4 @@
 name: Process API and UI Folders
-
 on:
   push:
     branches:
