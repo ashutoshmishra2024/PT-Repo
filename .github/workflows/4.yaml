@@ -1,0 +1,48 @@
+name: Process API and UI Folders
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  read-and-run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Read and process lines from text file
+        run: |
+          while IFS= read -r line || [ -n "$line" ]; do
+            # Split the line into components
+            IFS='***' read -r aws_key aws_region folder_scripts <<< "$line"
+            
+            # Further split the folder and scripts
+            IFS='-' read -r folder scripts <<< "$folder_scripts"
+            
+            # Split the scripts into an array
+            IFS=',' read -r -a script_array <<< "$scripts"
+            
+            # Set up AWS credentials
+            echo "Setting up AWS credentials for region: $aws_region"
+            aws configure set aws_access_key_id "$aws_key"
+            aws configure set aws_secret_access_key "$aws_key"
+            aws configure set region "$aws_region"
+            
+            # Navigate to the folder and run each script
+            if [ -d "$folder" ]; then
+              cd "$folder"
+              for script in "${script_array[@]}"; do
+                if [ -f "$script" ]; then
+                  echo "Running script: $script"
+                  bash "$script"
+                else
+                  echo "Script not found: $script"
+                fi
+              done
+              cd -
+            else
+              echo "Folder not found: $folder"
+            fi
+          done < text.txt
