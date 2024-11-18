@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      
 jobs:
   setup-matrix:
     runs-on: ubuntu-latest
