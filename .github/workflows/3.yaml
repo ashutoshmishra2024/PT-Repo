@@ -1,141 +1,40 @@
 name: Process API and UI Folders
- 
-on:
-push:
-branches:
-- main
- 
-jobs:
-read-folders:
-runs-on: ubuntu-latest
-steps:
-- name: Checkout code
-uses: actions/checkout@v3
- 
-- name: Read folders from text file
-id: read_folders
-run: |
-# Initialize an empty variable to store folder paths
-paths=""
- 
-# Read each line from the text file
-while IFS= read -r line || [ -n "$line" ]; do
-if [ -d "$line" ]; then
-echo "Found folder: $line"
-# Append the folder path to the paths variable, separated by comma
-paths="$paths,$line"
-else
-echo "Folder not found: $line"
-fi
-done < text.txt
- 
-# Remove leading comma
-paths="${paths#,}"
- 
-# Set the paths as output
-echo "::set-output name=paths::$paths"
- 
-# Create a matrix job based on available folders
-run-folders:
-needs: read-folders
-runs-on: ${{ matrix.runner }}
-strategy:
-matrix:
-folder: ${{ fromJson(needs.read-folders.outputs.paths) }}
-runner: [ubuntu-latest, windows-latest, macos-latest]
-steps:
-- name: Checkout code
-uses: actions/checkout@v3
- 
-- name: Run scripts in the folder
-run: |
-echo "Running scripts in folder: ${{ matrix.folder }}"
-cd ${{ matrix.folder }}
-# Run your scripts here (e.g., run a shell script or another command)
-# Example: bash run.sh or npm install && npm test
- 
 
- 
-Running Scripts in Sequence for Each Folder
- 
-If you want scripts to run in sequence instead of using a matrix, you can modify the workflow like this:
- 
-name: Process API and UI Folders Sequentially
- 
-on:
-push:
-branches:
-- main
- 
-jobs:
-sequential-run:
-runs-on: ubuntu-latest
-steps:
-- name: Checkout code
-uses: actions/checkout@v3
- 
-- name: Read and run scripts in folders sequentially
-run: |
-while IFS= read -r line || [ -n "$line" ]; do
-if [ -d "$line" ]; then
-echo "Running scripts in: $line"
-cd "$line"
-# Run your scripts here
-# Example: bash run.sh or npm install && npm test
-cd -
-else
-echo "Folder not found: $line"
-fi
-done < text.txt
-text.txt api/folder1 api/folder2 ui/folder1... by Mishra, Ashutosh (Cognizant)
-13:09
-Mishra, Ashutosh (Cognizant)
-text.txt
-api/folder1
-api/folder2
-ui/folder1
-ui/folder2
- 
- 
-(.github/workflows/run-folders.yml)
-name: Process API and UI Folders
- 
 on:
   push:
     branches:
       - main
- 
+
 jobs:
   read-folders:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
- 
-    - name: Read folders from text file
-      id: read_folders
-      run: |
-        # Initialize an empty variable to store folder paths
-        paths=""
- 
-        # Read each line from the text file
-        while IFS= read -r line || [ -n "$line" ]; do
-          if [ -d "$line" ]; then
-            echo "Found folder: $line"
-            # Append the folder path to the paths variable, separated by comma
-            paths="$paths,$line"
-          else
-            echo "Folder not found: $line"
-          fi
-        done < text.txt
- 
-        # Remove leading comma
-        paths="${paths#,}"
- 
-        # Set the paths as output
-        echo "::set-output name=paths::$paths"
-    
-    # Create a matrix job based on available folders
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Read folders from text file
+        id: read_folders
+        run: |
+          # Initialize an empty variable to store folder paths
+          paths=""
+
+          # Read each line from the text file
+          while IFS= read -r line || [ -n "$line" ]; do
+            if [ -d "$line" ]; then
+              echo "Found folder: $line"
+              # Append the folder path to the paths variable, separated by comma
+              paths="$paths,$line"
+            else
+              echo "Folder not found: $line"
+            fi
+          done < text.txt
+
+          # Remove leading comma
+          paths="${paths#,}"
+
+          # Set the paths as output
+          echo "::set-output name=paths::$paths"
+
   run-folders:
     needs: read-folders
     runs-on: ${{ matrix.runner }}
@@ -144,45 +43,12 @@ jobs:
         folder: ${{ fromJson(needs.read-folders.outputs.paths) }}
         runner: [ubuntu-latest, windows-latest, macos-latest]
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
- 
-    - name: Run scripts in the folder
-      run: |
-        echo "Running scripts in folder: ${{ matrix.folder }}"
-        cd ${{ matrix.folder }}
-        # Run your scripts here (e.g., run a shell script or another command)
-# Example: bash run.sh or npm install && npm test
- 
- 
-Running Scripts in Sequence for Each Folder
- 
-If you want scripts to run in sequence instead of using a matrix, you can modify the workflow like this:
- 
-name: Process API and UI Folders Sequentially
- 
-on:
-  push:
-    branches:
-      - main
- 
-jobs:
-  sequential-run:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
- 
-    - name: Read and run scripts in folders sequentially
-      run: |
-        while IFS= read -r line || [ -n "$line" ]; do
-          if [ -d "$line" ]; then
-            echo "Running scripts in: $line"
-            cd "$line"
-            # Run your scripts here
-# Example: bash run.sh or npm install && npm test
-            cd -
-          else
-            echo "Folder not found: $line"
-          fi
-        done < text.txt
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Run scripts in the folder
+        run: |
+          echo "Running scripts in folder: ${{ matrix.folder }}"
+          cd ${{ matrix.folder }}
+          # Run your scripts here (e.g., run a shell script or another command)
+          # Example: bash run.sh or npm install && npm test
