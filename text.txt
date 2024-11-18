@@ -1,3 +1,4 @@
-a2000***us-east-1*** DeterAPI -scr1,scr2
-a2000***us-east-1*** Deter- scr1,scr2
-a2000***us-east-1*** DeterAPI- scr1,scr2,scr3,scr4
+api/folder1
+api/folder2
+ui/folder1
+ui/folder2
